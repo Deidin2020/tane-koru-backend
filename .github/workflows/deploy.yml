@@ -1,0 +1,48 @@
+name: Deploy Laravel API
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@v1.3.0
+        with:
+          host: 3.79.222.91
+          username: ubuntu
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+
+            cd /var/www/api.nemayapi.com.tr
+
+            echo "Pull latest code..."
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "Install Composer dependencies..."
+            composer install --no-dev --optimize-autoloader --no-interaction
+
+            echo "Run database migrations..."
+            php artisan migrate --force
+
+            echo "Clear and rebuild caches..."
+            php artisan optimize:clear
+            php artisan optimize
+
+            echo "Set permissions..."
+            sudo chown -R www-data:www-data storage bootstrap/cache
+            sudo chmod -R 775 storage bootstrap/cache
+
+            echo "Reload PHP-FPM..."
+            sudo systemctl reload php8.3-fpm
+
+            echo "Reload Nginx..."
+            sudo systemctl reload nginx
+
+            echo "Deployment completed successfully."
