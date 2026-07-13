@@ -143,10 +143,14 @@ class ReportController extends Controller
 
         /** @var User $user */
         $user = $request->user();
-        $report = DailyReport::query()->firstOrNew([
-            'project_id' => $project->id,
-            'report_date' => $reportDate->format('Y-m-d'),
-        ]);
+        $report = DailyReport::query()
+            ->where('project_id', $project->id)
+            ->whereDate('report_date', $reportDate)
+            ->first()
+            ?? new DailyReport([
+                'project_id' => $project->id,
+                'report_date' => $reportDate->format('Y-m-d'),
+            ]);
 
         if (! $report->exists) {
             $report->created_by = $user->id;
