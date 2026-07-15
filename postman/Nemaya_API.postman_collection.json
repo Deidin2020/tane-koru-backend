@@ -1,0 +1,1642 @@
+{
+  "info": {
+    "name": "Nemaya API",
+    "description": "Postman Collection v2.1 generated from the Laravel backend route inventory (`php artisan route:list --path=api --except-vendor`) and controller/request validation rules. Distinct API operations: 41.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://api.nemayapi.com.tr/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "bearer_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "description": "Auth endpoints. `register` and `login` are public; `logout` and `me` require a bearer token.",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Creates a user and profile. The first user becomes `admin`; later users default to `salesperson`.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Jane Doe\",\n  \"email\": \"jane@example.com\",\n  \"password\": \"secret123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Authenticates a user and returns a bearer token.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"jane@example.com\",\n  \"password\": \"secret123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Revokes the current bearer token.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearer_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Returns the authenticated user's user/profile/roles payload.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearer_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Projects",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{bearer_token}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Get Default Project",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/projects/default",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "default"
+              ]
+            },
+            "description": "Returns the default project. Backend will auto-create `Tane Koru` if no default project exists."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Salespeople",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{bearer_token}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "List Salespeople",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/salespeople",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "salespeople"
+              ]
+            },
+            "description": "Lists profiles for salesperson selection filters and form dropdowns."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Agencies",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{bearer_token}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "List Agencies",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/agencies",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "agencies"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "Acme",
+                  "disabled": false,
+                  "description": "Optional name search"
+                },
+                {
+                  "key": "order",
+                  "value": "asc",
+                  "disabled": false,
+                  "description": "`asc` or `desc`"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "per_page",
+                  "value": "50",
+                  "disabled": false,
+                  "description": "1-200"
+                }
+              ]
+            },
+            "description": "Paginated agency/company listing."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Agency",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/agencies",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "agencies"
+              ]
+            },
+            "description": "Requires `can_write`. Name is normalized for uniqueness; duplicates return `409 conflict`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Acme Agency\",\n  \"category\": \"small_agency\",\n  \"contact_person\": \"John Smith\",\n  \"phone\": \"+90 555 000 0000\",\n  \"address\": \"Istanbul\",\n  \"notes\": \"Primary referral partner\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Agency",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/agencies/:agency",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "agencies",
+                ":agency"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Agency Summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/agencies/:agency/summary",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "agencies",
+                ":agency",
+                "summary"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Agency Clients",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/agencies/:agency/clients",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "agencies",
+                ":agency",
+                "clients"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Agency Project Visits",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/agencies/:agency/project-visits",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "agencies",
+                ":agency",
+                "project-visits"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Agency Company Visits",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/agencies/:agency/company-visits",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "agencies",
+                ":agency",
+                "company-visits"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Clients",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{bearer_token}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "List Clients",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/clients",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "clients"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "follow_up",
+                  "disabled": false,
+                  "description": "Optional pipeline status filter"
+                },
+                {
+                  "key": "search",
+                  "value": "Ali",
+                  "disabled": false,
+                  "description": "Matches client name, phone, or required unit"
+                },
+                {
+                  "key": "salesperson_id",
+                  "value": "4",
+                  "disabled": false,
+                  "description": "Assigned salesperson/profile id"
+                },
+                {
+                  "key": "created_from",
+                  "value": "2026-07-01",
+                  "disabled": false,
+                  "description": "YYYY-MM-DD"
+                },
+                {
+                  "key": "created_to",
+                  "value": "2026-07-31",
+                  "disabled": false,
+                  "description": "YYYY-MM-DD"
+                },
+                {
+                  "key": "follow_up",
+                  "value": "today",
+                  "disabled": false,
+                  "description": "`today`, `overdue`, `upcoming`, or `none`"
+                },
+                {
+                  "key": "sort",
+                  "value": "created_at",
+                  "disabled": false,
+                  "description": "`created_at`, `last_activity_at`, `client_name`, `follow_up_date`"
+                },
+                {
+                  "key": "order",
+                  "value": "desc",
+                  "disabled": false,
+                  "description": "`asc` or `desc`"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "per_page",
+                  "value": "50",
+                  "disabled": false,
+                  "description": "1-200"
+                }
+              ]
+            },
+            "description": "Paginated client list with pipeline and follow-up filters."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Client",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/clients",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "clients"
+              ]
+            },
+            "description": "Requires `can_write`. `agency_id` is required when `lead_source` is `agency`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"client_name\": \"Ali Veli\",\n  \"phone\": \"+90 555 123 4567\",\n  \"nationality\": \"Turkish\",\n  \"lead_source\": \"agency\",\n  \"agency_id\": 9,\n  \"direct_source\": null,\n  \"referral_name\": null,\n  \"budget\": 150000,\n  \"currency\": \"USD\",\n  \"required_unit\": \"2+1\",\n  \"payment_method\": \"cash\",\n  \"purchase_purpose\": \"investment\",\n  \"visit_date\": \"2026-07-10\",\n  \"assigned_salesperson_id\": 4,\n  \"presentation_completed\": true,\n  \"objection\": null,\n  \"notes\": \"Warm lead\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Client",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/clients/:client",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "clients",
+                ":client"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Client",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/clients/:client",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "clients",
+                ":client"
+              ]
+            },
+            "description": "Requires `can_write`. Send only the fields you want to change.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"client_name\": \"Ali Veli Updated\",\n  \"phone\": \"+90 555 123 4567\",\n  \"lead_source\": \"agency\",\n  \"agency_id\": 9,\n  \"budget\": 175000,\n  \"currency\": \"USD\",\n  \"required_unit\": \"3+1\",\n  \"payment_method\": \"installments\",\n  \"purchase_purpose\": \"residence\",\n  \"assigned_salesperson_id\": 4,\n  \"presentation_completed\": true,\n  \"objection\": \"Waiting for spouse approval\",\n  \"notes\": \"Needs another meeting\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Save Follow Up",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/clients/:client/follow-up",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "clients",
+                ":client",
+                "follow-up"
+              ]
+            },
+            "description": "Requires `can_write`. At least one of `follow_up_date` or `note` must be provided.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"follow_up_date\": \"2026-07-15\",\n  \"note\": \"Call back after viewing payment plan.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Client Activities",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/clients/:client/activities",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "clients",
+                ":client",
+                "activities"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Client Activity",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/clients/:client/activities",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "clients",
+                ":client",
+                "activities"
+              ]
+            },
+            "description": "Requires `can_write`. Creates a `note` activity entry.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Client requested a second presentation next week.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Documents",
+          "item": [
+            {
+              "name": "List Client Documents",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/clients/:client/documents",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "clients",
+                    ":client",
+                    "documents"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Upload Client Document",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/clients/:client/documents",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "clients",
+                    ":client",
+                    "documents"
+                  ]
+                },
+                "description": "Requires `can_write`. Uses `multipart/form-data`. Allowed file types: pdf, jpg, jpeg, png, webp.",
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "document_type",
+                      "type": "text",
+                      "value": "reservation_form",
+                      "description": "`passport_id`, `reservation_form`, `sales_contract`, `payment_receipt`, or `other`"
+                    },
+                    {
+                      "key": "file",
+                      "type": "file",
+                      "src": "/absolute/path/to/example.pdf",
+                      "description": "Attach a real file before sending"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Client Document Download URL",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/clients/:client/documents/:document/download",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "clients",
+                    ":client",
+                    "documents",
+                    ":document",
+                    "download"
+                  ]
+                },
+                "description": "Returns a temporary signed URL valid for 60 seconds."
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Client Document",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/clients/:client/documents/:document",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "clients",
+                    ":client",
+                    "documents",
+                    ":document"
+                  ]
+                },
+                "description": "Requires `is_manager`."
+              },
+              "response": []
+            },
+            {
+              "name": "Stream Signed Client Document",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/client-documents/:document/file",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "client-documents",
+                    ":document",
+                    "file"
+                  ],
+                  "query": [
+                    {
+                      "key": "expires",
+                      "value": "1720600000",
+                      "disabled": false,
+                      "description": "Value returned by the signed URL response"
+                    },
+                    {
+                      "key": "signature",
+                      "value": "paste_signature_here",
+                      "disabled": false,
+                      "description": "Value returned by the signed URL response"
+                    }
+                  ]
+                },
+                "description": "Public signed-file endpoint. Do not use bearer auth here; call the download-URL endpoint first and then either open the returned URL directly or populate the `expires` and `signature` query params from that response.",
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Change Client Status",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/clients/:client/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "clients",
+                ":client",
+                "status"
+              ]
+            },
+            "description": "Requires `can_write`. Moving to `reservation` requires a `reservation_form` document. Moving to `deal` requires `passport_id`, `reservation_form`, `sales_contract`, and `payment_receipt`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"to\": \"reservation\",\n  \"reason\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Project Visits",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{bearer_token}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "List Project Visits",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/project-visits",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "project-visits"
+              ],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2026-07-01",
+                  "disabled": false,
+                  "description": "Visit datetime/date lower bound"
+                },
+                {
+                  "key": "to",
+                  "value": "2026-07-31",
+                  "disabled": false,
+                  "description": "Visit datetime/date upper bound"
+                },
+                {
+                  "key": "sales_rep_id",
+                  "value": "4",
+                  "disabled": false
+                },
+                {
+                  "key": "search",
+                  "value": "Acme",
+                  "disabled": false,
+                  "description": "Matches contact person or agency name"
+                },
+                {
+                  "key": "order",
+                  "value": "desc",
+                  "disabled": false,
+                  "description": "`asc` or `desc`"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "per_page",
+                  "value": "50",
+                  "disabled": false,
+                  "description": "1-200"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Project Visit",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/project-visits",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "project-visits"
+              ]
+            },
+            "description": "Requires `can_write`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agency_id\": 9,\n  \"visit_date\": \"2026-07-10T12:00:00Z\",\n  \"contact_person\": \"John Smith\",\n  \"phone\": \"+90 555 111 1111\",\n  \"sales_rep_id\": 4,\n  \"feedback\": \"Interested in inventory\",\n  \"notes\": \"Bring brochure pack\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Project Visit",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/project-visits/:projectVisit",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "project-visits",
+                ":projectVisit"
+              ]
+            },
+            "description": "Requires `can_write`. Partial update supported.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"visit_date\": \"2026-07-11T10:30:00Z\",\n  \"feedback\": \"Follow-up meeting booked\",\n  \"notes\": \"Send updated price sheet\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Project Visit",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/project-visits/:projectVisit",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "project-visits",
+                ":projectVisit"
+              ]
+            },
+            "description": "Requires `is_manager`."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Company Visits",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{bearer_token}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "List Company Visits",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/company-visits",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "company-visits"
+              ],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2026-07-01",
+                  "disabled": false,
+                  "description": "Visit datetime/date lower bound"
+                },
+                {
+                  "key": "to",
+                  "value": "2026-07-31",
+                  "disabled": false,
+                  "description": "Visit datetime/date upper bound"
+                },
+                {
+                  "key": "sales_rep_id",
+                  "value": "4",
+                  "disabled": false
+                },
+                {
+                  "key": "category",
+                  "value": "large_company",
+                  "disabled": false,
+                  "description": "`large_company`, `medium_company`, `small_agency`, or `individual_agent`"
+                },
+                {
+                  "key": "search",
+                  "value": "Beta",
+                  "disabled": false,
+                  "description": "Matches contact person or agency name"
+                },
+                {
+                  "key": "order",
+                  "value": "desc",
+                  "disabled": false,
+                  "description": "`asc` or `desc`"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "per_page",
+                  "value": "50",
+                  "disabled": false,
+                  "description": "1-200"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Company Visit",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/company-visits",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "company-visits"
+              ]
+            },
+            "description": "Requires `can_write`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agency_id\": 12,\n  \"visit_date\": \"2026-07-10T13:00:00Z\",\n  \"category\": \"large_company\",\n  \"contact_person\": \"Sara Kim\",\n  \"address\": \"Ankara\",\n  \"sales_rep_id\": 4,\n  \"feedback\": \"Requested follow-up pack\",\n  \"notes\": \"Potential bulk buyer\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Company Visit",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/company-visits/:companyVisit",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "company-visits",
+                ":companyVisit"
+              ]
+            },
+            "description": "Requires `can_write`. Partial update supported.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category\": \"medium_company\",\n  \"feedback\": \"Waiting for internal review\",\n  \"notes\": \"Schedule another touchpoint next week\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Company Visit",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/company-visits/:companyVisit",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "company-visits",
+                ":companyVisit"
+              ]
+            },
+            "description": "Requires `is_manager`."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{bearer_token}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reports/dashboard",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reports",
+                "dashboard"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Daily Report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reports/daily",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reports",
+                "daily"
+              ],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2026-07-10",
+                  "disabled": false,
+                  "description": "Single-day report"
+                },
+                {
+                  "key": "from",
+                  "value": "2026-07-01",
+                  "disabled": true,
+                  "description": "Range start (optional alternative to `date`)"
+                },
+                {
+                  "key": "to",
+                  "value": "2026-07-10",
+                  "disabled": true,
+                  "description": "Range end (optional alternative to `date`)"
+                }
+              ]
+            },
+            "description": "Use either `date` for a single day or `from`/`to` for a range. If omitted, backend defaults to today."
+          },
+          "response": []
+        },
+        {
+          "name": "Upsert Daily Summary",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reports/daily/summary",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reports",
+                "daily",
+                "summary"
+              ]
+            },
+            "description": "Requires `can_write`. Backend only allows updating the summary for today's date.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"report_date\": \"2026-07-10\",\n  \"summary\": \"Strong day overall with multiple qualified visits.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Performance Report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reports/performance",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reports",
+                "performance"
+              ],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2026-07-01",
+                  "disabled": false,
+                  "description": "Optional range start"
+                },
+                {
+                  "key": "to",
+                  "value": "2026-07-31",
+                  "disabled": false,
+                  "description": "Optional range end"
+                },
+                {
+                  "key": "sales_rep_id",
+                  "value": "4",
+                  "disabled": false,
+                  "description": "Optional salesperson/profile filter"
+                }
+              ]
+            },
+            "description": "If no date filters are provided, backend defaults to the current month."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{bearer_token}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users"
+              ]
+            },
+            "description": "Requires `is_admin`."
+          },
+          "response": []
+        },
+        {
+          "name": "Add User Role",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/:user/roles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                ":user",
+                "roles"
+              ]
+            },
+            "description": "Requires `is_admin`. Duplicate role assignments return `409 conflict`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"sales_manager\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Remove User Role",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/:user/roles/:role",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                ":user",
+                "roles",
+                ":role"
+              ]
+            },
+            "description": "Requires `is_admin`. Removing the last `admin` role returns a business-rule error."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
