@@ -18,6 +18,7 @@ class AgencyCompany extends Model
         'category',
         'contact_person',
         'phone',
+        'email',
         'address',
         'notes',
         'created_by',

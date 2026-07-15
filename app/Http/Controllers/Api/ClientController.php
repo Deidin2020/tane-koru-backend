@@ -11,7 +11,7 @@ use App\Models\Client;
 use App\Models\Project;
 use App\Models\User;
 use App\Support\ActivityLogger;
-use Carbon\Carbon;
+use App\Support\DefaultSalesperson;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -20,8 +20,8 @@ class ClientController extends Controller
 {
     public function __construct(
         private readonly ActivityLogger $activityLogger,
-    ) {
-    }
+        private readonly DefaultSalesperson $defaultSalesperson,
+    ) {}
 
     public function index(Request $request): JsonResponse
     {
@@ -91,6 +91,8 @@ class ClientController extends Controller
 
         $client = DB::transaction(function () use ($request, $project, $user): Client {
             $data = $request->validated();
+
+            $data['assigned_salesperson_id'] = $data['assigned_salesperson_id'] ?? $this->defaultSalesperson->idOrFail();
 
             if (($data['lead_source'] ?? null) !== 'agency') {
                 $data['agency_id'] = null;

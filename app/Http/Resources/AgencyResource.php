@@ -16,6 +16,7 @@ class AgencyResource extends JsonResource
             'category' => $this->category,
             'contact_person' => $this->contact_person,
             'phone' => $this->phone,
+            'email' => $this->email,
             'address' => $this->address,
             'notes' => $this->notes,
             'created_by' => $this->created_by,

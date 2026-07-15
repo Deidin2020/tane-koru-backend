@@ -9,11 +9,16 @@ use App\Http\Resources\ProjectVisitResource;
 use App\Models\Project;
 use App\Models\ProjectVisit;
 use App\Models\User;
+use App\Support\DefaultSalesperson;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ProjectVisitController extends Controller
 {
+    public function __construct(
+        private readonly DefaultSalesperson $defaultSalesperson,
+    ) {}
+
     public function index(Request $request): JsonResponse
     {
         $query = ProjectVisit::query()->with('agency');
@@ -33,8 +38,10 @@ class ProjectVisitController extends Controller
         if ($search = trim((string) $request->query('search'))) {
             $query->where(function ($builder) use ($search): void {
                 $builder
-                    ->where('contact_person', 'like', "%{$search}%")
-                    ->orWhereHas('agency', fn ($agency) => $agency->where('name', 'like', "%{$search}%"));
+                    ->whereHas('agency', fn ($agency) => $agency
+                        ->where('name', 'like', "%{$search}%")
+                        ->orWhere('contact_person', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%"));
             });
         }
 
@@ -59,8 +66,10 @@ class ProjectVisitController extends Controller
 
         /** @var User $user */
         $user = $request->user();
+        $data = $request->validated();
+        $data['sales_rep_id'] = $data['sales_rep_id'] ?? $this->defaultSalesperson->idOrFail();
         $visit = ProjectVisit::query()->create([
-            ...$request->validated(),
+            ...$data,
             'project_id' => $project->id,
             'created_by' => $user->id,
         ])->load('agency');

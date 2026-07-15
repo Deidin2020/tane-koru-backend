@@ -14,6 +14,7 @@ class UserSummaryResource extends JsonResource
             'full_name' => $this->profile?->full_name ?? $this->name,
             'email' => $this->email,
             'roles' => $this->roles->pluck('name')->values()->all(),
+            'is_active' => (bool) $this->is_active,
         ];
     }
 }

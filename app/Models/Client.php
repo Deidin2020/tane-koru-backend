@@ -29,6 +29,7 @@ class Client extends Model
         'assigned_salesperson_id',
         'presentation_completed',
         'objection',
+        'offer_details',
         'notes',
         'status',
         'not_interested_reason',

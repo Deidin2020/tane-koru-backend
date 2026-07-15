@@ -259,34 +259,9 @@ This document is for API design only. No Laravel implementation is included.
 
 ### POST `/auth/register`
 
-- Auth: none
-- Request:
-
-```json
-{
-  "full_name": "Jane Doe",
-  "email": "jane@example.com",
-  "password": "secret123"
-}
-```
-
-- Validation:
-  - `full_name`: required, string, max 255
-  - `email`: required, valid email, unique in `users.email`
-  - `password`: required, string, min 8
-- Behavior:
-  - create `users`
-  - create `profiles`
-  - first user gets `admin`, later users get `salesperson`
-- Response `201`:
-
-```json
-{
-  "user": { "id": 1, "email": "jane@example.com", "name": "Jane Doe" },
-  "profile": { "id": 4, "user_id": 1, "full_name": "Jane Doe", "email": "jane@example.com" },
-  "roles": ["salesperson"]
-}
-```
+- Public registration is disabled.
+- Response: `403 REGISTRATION_DISABLED`.
+- Users are created by an authenticated admin through `POST /users`.
 
 ### POST `/auth/login`
 
@@ -347,10 +322,19 @@ This document is for API design only. No Laravel implementation is included.
 ```json
 {
   "data": [
-    { "id": 4, "full_name": "Jane Doe", "email": "jane@example.com" }
+    { "id": 4, "full_name": "Jane Doe", "email": "jane@example.com", "phone": null, "is_active": true, "is_default": true }
   ]
 }
 ```
+
+Admin-only management endpoints:
+
+- `POST /salespeople`
+- `PATCH /salespeople/{id}`
+- `DELETE /salespeople/{id}` (`409 SALESPERSON_HAS_RELATED_RECORDS` when linked)
+- `PUT /salespeople/{id}/default` atomically replaces the only default salesperson
+
+Creating a client or visit without a salesperson uses the active default. If none exists, the API returns `422 DEFAULT_SALESPERSON_REQUIRED`.
 
 ## 5. Clients API
 
@@ -401,6 +385,7 @@ This document is for API design only. No Laravel implementation is included.
   "assigned_salesperson_id": 4,
   "presentation_completed": true,
   "objection": null,
+  "offer_details": "Unit B-12, 30% down payment, 24 installments",
   "notes": "Warm lead"
 }
 ```
@@ -422,12 +407,14 @@ This document is for API design only. No Laravel implementation is included.
   - `assigned_salesperson_id`: nullable, exists in `profiles.id`
   - `presentation_completed`: boolean
   - `objection`: nullable, string
+  - `offer_details`: nullable, text
   - `notes`: nullable, string
 - Behavior:
   - server sets `project_id` to default project
   - server sets `status=new`
   - server sets `created_by`
   - server creates `client_created` activity
+  - omitted `assigned_salesperson_id` is replaced by the active default salesperson
 - Response `201`: `Client`
 
 ### GET `/clients/{id}`
@@ -575,7 +562,13 @@ This document is for API design only. No Laravel implementation is included.
 
 ## 6. Agencies & Companies API
 
-These endpoints are read-only externally. Records are maintained internally via client/visit flows.
+Read endpoints require authentication. Create/update follow `can_write`; delete requires a manager.
+
+- `POST /agencies`
+- `PATCH /agencies/{id}`
+- `DELETE /agencies/{id}` (`409 AGENCY_HAS_RELATED_RECORDS` when linked)
+
+Agency records include nullable `email`; normalized names remain unique.
 
 ### GET `/agencies`
 
@@ -680,8 +673,6 @@ These endpoints are read-only externally. Records are maintained internally via 
 {
   "agency_id": 9,
   "visit_date": "2026-07-06T12:00:00Z",
-  "contact_person": "John Smith",
-  "phone": "+90 555 111 1111",
   "sales_rep_id": 4,
   "feedback": "Interested in inventory",
   "notes": null
@@ -691,14 +682,14 @@ These endpoints are read-only externally. Records are maintained internally via 
 - Validation:
   - `agency_id`: required, exists
   - `visit_date`: required, date
-  - `contact_person`: nullable, string, max 255
-  - `phone`: nullable, string, max 50
   - `sales_rep_id`: nullable, exists in `profiles.id`
   - `feedback`: nullable, string
   - `notes`: nullable, string
 - Behavior:
   - server sets `project_id`
   - server sets `created_by`
+  - omitted `sales_rep_id` is replaced by the active default salesperson
+  - `contact_person` and `phone` are read live from the related agency and are prohibited in writes
 - Response `201`: `ProjectVisit`
 
 ### PATCH `/project-visits/{id}`
@@ -748,8 +739,6 @@ These endpoints are read-only externally. Records are maintained internally via 
   "agency_id": 12,
   "visit_date": "2026-07-06T13:00:00Z",
   "category": "large_company",
-  "contact_person": "Sara Kim",
-  "address": "Ankara",
   "sales_rep_id": 4,
   "feedback": "Requested follow-up pack",
   "notes": null
@@ -760,14 +749,14 @@ These endpoints are read-only externally. Records are maintained internally via 
   - `agency_id`: required, exists
   - `visit_date`: required, date
   - `category`: nullable, enum
-  - `contact_person`: nullable, string, max 255
-  - `address`: nullable, string
   - `sales_rep_id`: nullable, exists
   - `feedback`: nullable, string
   - `notes`: nullable, string
 - Behavior:
   - server sets `project_id`
   - server sets `created_by`
+  - omitted `sales_rep_id` is replaced by the active default salesperson
+  - `contact_person` and `address` are read live from the related agency and are prohibited in writes
 - Response `201`: `CompanyVisit`
 
 ### PATCH `/company-visits/{id}`
@@ -931,11 +920,31 @@ These endpoints are read-only externally. Records are maintained internally via 
       "id": 4,
       "full_name": "Jane Doe",
       "email": "jane@example.com",
-      "roles": ["admin", "salesperson"]
+      "roles": ["admin", "salesperson"],
+      "is_active": true
     }
   ]
 }
 ```
+
+### POST `/users`
+
+- Auth: `is_admin`
+- Creates a user, profile, and the requested role assignments.
+- Required fields: `full_name`, `email`, `password`, and non-empty `roles`; `is_active` defaults to `true`.
+- Response: `201` user summary.
+
+### PATCH `/users/{id}`
+
+- Auth: `is_admin`
+- Accepts `full_name`, `email`, `password`, and `is_active`.
+- Response: `200` user summary.
+
+### DELETE `/users/{id}`
+
+- Auth: `is_admin`
+- Archives the user and disables their profile.
+- The current user cannot delete themself (`409 CANNOT_DELETE_CURRENT_USER`), and the last admin is protected.
 
 ### POST `/users/{id}/roles`
 

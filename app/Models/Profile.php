@@ -14,9 +14,22 @@ class Profile extends Model
     protected $fillable = [
         'user_id',
         'full_name',
+        'email',
         'phone',
         'avatar',
+        'is_salesperson',
+        'is_active',
+        'is_default',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'is_salesperson' => 'boolean',
+            'is_active' => 'boolean',
+            'is_default' => 'boolean',
+        ];
+    }
 
     public function user(): BelongsTo
     {
@@ -26,5 +39,15 @@ class Profile extends Model
     public function clients(): HasMany
     {
         return $this->hasMany(Client::class, 'assigned_salesperson_id');
+    }
+
+    public function projectVisits(): HasMany
+    {
+        return $this->hasMany(ProjectVisit::class, 'sales_rep_id');
+    }
+
+    public function companyVisits(): HasMany
+    {
+        return $this->hasMany(CompanyVisit::class, 'sales_rep_id');
     }
 }

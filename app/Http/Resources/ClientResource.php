@@ -29,6 +29,7 @@ class ClientResource extends JsonResource
             'assigned_salesperson_id' => $this->assigned_salesperson_id,
             'presentation_completed' => (bool) $this->presentation_completed,
             'objection' => $this->objection,
+            'offer_details' => $this->offer_details,
             'notes' => $this->notes,
             'status' => $this->status,
             'not_interested_reason' => $this->not_interested_reason,

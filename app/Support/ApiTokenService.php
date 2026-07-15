@@ -42,7 +42,7 @@ class ApiTokenService
             ->with(['profile', 'roles'])
             ->find($decoded['sub']);
 
-        if (! $user) {
+        if (! $user || ! $user->is_active) {
             return null;
         }
 

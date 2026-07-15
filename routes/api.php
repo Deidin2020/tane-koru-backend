@@ -23,6 +23,10 @@ Route::middleware('api.auth')->group(function (): void {
 
     Route::get('/projects/default', [ProjectController::class, 'default']);
     Route::get('/salespeople', [SalespeopleController::class, 'index']);
+    Route::post('/salespeople', [SalespeopleController::class, 'store'])->middleware('role:is_admin');
+    Route::patch('/salespeople/{salesperson}', [SalespeopleController::class, 'update'])->middleware('role:is_admin');
+    Route::delete('/salespeople/{salesperson}', [SalespeopleController::class, 'destroy'])->middleware('role:is_admin');
+    Route::put('/salespeople/{salesperson}/default', [SalespeopleController::class, 'setDefault'])->middleware('role:is_admin');
 
     Route::get('/clients', [ClientController::class, 'index']);
     Route::post('/clients', [ClientController::class, 'store'])->middleware('role:can_write');
@@ -43,6 +47,8 @@ Route::middleware('api.auth')->group(function (): void {
     Route::get('/agencies', [AgencyController::class, 'index']);
     Route::post('/agencies', [AgencyController::class, 'store'])->middleware('role:can_write');
     Route::get('/agencies/{agency}', [AgencyController::class, 'show']);
+    Route::patch('/agencies/{agency}', [AgencyController::class, 'update'])->middleware('role:can_write');
+    Route::delete('/agencies/{agency}', [AgencyController::class, 'destroy'])->middleware('role:is_manager');
     Route::get('/agencies/{agency}/summary', [AgencyController::class, 'summary']);
     Route::get('/agencies/{agency}/clients', [AgencyController::class, 'clients']);
     Route::get('/agencies/{agency}/project-visits', [AgencyController::class, 'projectVisits']);
@@ -64,6 +70,9 @@ Route::middleware('api.auth')->group(function (): void {
     Route::get('/reports/performance', [ReportController::class, 'performance']);
 
     Route::get('/users', [UserController::class, 'index'])->middleware('role:is_admin');
+    Route::post('/users', [UserController::class, 'store'])->middleware('role:is_admin');
+    Route::patch('/users/{user}', [UserController::class, 'update'])->middleware('role:is_admin');
+    Route::delete('/users/{user}', [UserController::class, 'destroy'])->middleware('role:is_admin');
     Route::post('/users/{user}/roles', [UserController::class, 'storeRole'])->middleware('role:is_admin');
     Route::delete('/users/{user}/roles/{role}', [UserController::class, 'destroyRole'])->middleware('role:is_admin');
 });

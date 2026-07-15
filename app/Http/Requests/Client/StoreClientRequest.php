@@ -26,7 +26,7 @@ class StoreClientRequest extends ApiFormRequest
             'phone' => ['nullable', 'string', 'max:50'],
             'nationality' => ['nullable', 'string', 'max:100'],
             'lead_source' => ['required', Rule::in(['agency', 'direct', 'referral'])],
-            'agency_id' => ['nullable', 'integer', 'exists:agencies_companies,id', Rule::requiredIf(fn () => $this->input('lead_source') === 'agency')],
+            'agency_id' => ['nullable', 'integer', Rule::exists('agencies_companies', 'id')->whereNull('deleted_at'), Rule::requiredIf(fn () => $this->input('lead_source') === 'agency')],
             'direct_source' => ['nullable', 'string', 'max:255'],
             'referral_name' => ['nullable', 'string', 'max:255'],
             'budget' => ['nullable', 'numeric', 'min:0'],
@@ -35,9 +35,10 @@ class StoreClientRequest extends ApiFormRequest
             'payment_method' => ['nullable', Rule::in(['cash', 'installments'])],
             'purchase_purpose' => ['nullable', Rule::in(['citizenship', 'investment', 'residence'])],
             'visit_date' => ['nullable', 'date'],
-            'assigned_salesperson_id' => ['nullable', 'integer', 'exists:profiles,id'],
+            'assigned_salesperson_id' => ['nullable', 'integer', Rule::exists('profiles', 'id')->where(fn ($query) => $query->whereNull('deleted_at')->where('is_salesperson', true)->where('is_active', true))],
             'presentation_completed' => ['sometimes', 'boolean'],
             'objection' => ['nullable', 'string'],
+            'offer_details' => ['nullable', 'string'],
             'notes' => ['nullable', 'string'],
         ];
     }

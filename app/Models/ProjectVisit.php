@@ -14,8 +14,6 @@ class ProjectVisit extends Model
         'project_id',
         'agency_id',
         'visit_date',
-        'contact_person',
-        'phone',
         'sales_rep_id',
         'feedback',
         'notes',

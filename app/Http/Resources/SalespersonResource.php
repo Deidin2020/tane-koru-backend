@@ -5,17 +5,17 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class ProfileResource extends JsonResource
+class SalespersonResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
         return [
             'id' => $this->id,
-            'user_id' => $this->user_id,
             'full_name' => $this->full_name,
+            'email' => $this->email ?? $this->user?->email,
             'phone' => $this->phone,
-            'avatar' => $this->avatar,
-            'email' => $this->email ?? $this->whenLoaded('user', fn () => $this->user?->email),
+            'is_active' => (bool) $this->is_active,
+            'is_default' => (bool) $this->is_default,
         ];
     }
 }

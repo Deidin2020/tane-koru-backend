@@ -15,8 +15,6 @@ class CompanyVisit extends Model
         'agency_id',
         'visit_date',
         'category',
-        'contact_person',
-        'address',
         'sales_rep_id',
         'feedback',
         'notes',

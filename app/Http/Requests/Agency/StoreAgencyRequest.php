@@ -19,6 +19,7 @@ class StoreAgencyRequest extends ApiFormRequest
             'category' => ['nullable', Rule::in(['large_company', 'medium_company', 'small_agency', 'individual_agent'])],
             'contact_person' => ['nullable', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
+            'email' => ['nullable', 'email', 'max:255'],
             'address' => ['nullable', 'string'],
             'notes' => ['nullable', 'string'],
         ];
