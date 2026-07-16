@@ -19,6 +19,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 class ReportController extends Controller
 {
@@ -30,8 +31,8 @@ class ReportController extends Controller
         $last30 = $todayLocal->copy()->subDays(29)->format('Y-m-d');
 
         $stats = [
-            'project_visits' => ProjectVisit::query()->whereDate('visit_date', $today)->count(),
-            'company_visits' => CompanyVisit::query()->whereDate('visit_date', $today)->count(),
+            'project_visits' => $this->visitsForReportDate(ProjectVisit::class, $today, $today)->count(),
+            'company_visits' => $this->visitsForReportDate(CompanyVisit::class, $today, $today)->count(),
             'new_clients' => $this->clientsForReportDate($today, $today)->count(),
             'presentations' => $this->clientsForReportDate($today, $today)->where('presentation_completed', true)->count(),
         ];
@@ -53,8 +54,8 @@ class ReportController extends Controller
             $dateValue = $date->format('Y-m-d');
             return [
                 'date' => $dateValue,
-                'project_visits' => ProjectVisit::query()->whereDate('visit_date', $dateValue)->count(),
-                'company_visits' => CompanyVisit::query()->whereDate('visit_date', $dateValue)->count(),
+                'project_visits' => $this->visitsForReportDate(ProjectVisit::class, $dateValue, $dateValue)->count(),
+                'company_visits' => $this->visitsForReportDate(CompanyVisit::class, $dateValue, $dateValue)->count(),
                 'new_clients' => $this->clientsForReportDate($dateValue, $dateValue)->count(),
                 'presentations' => $this->clientsForReportDate($dateValue, $dateValue)->where('presentation_completed', true)->count(),
             ];
@@ -90,12 +91,8 @@ class ReportController extends Controller
     {
         [$from, $to] = $this->resolveDateRange($request);
         $project = Project::resolveDefault();
-        $projectVisits = ProjectVisit::query()->with(['agency', 'salesRep.user'])
-            ->whereDate('visit_date', '>=', $from)->whereDate('visit_date', '<=', $to)->orderBy('visit_date')
-            ->get();
-        $companyVisits = CompanyVisit::query()->with(['agency', 'salesRep.user'])
-            ->whereDate('visit_date', '>=', $from)->whereDate('visit_date', '<=', $to)->orderBy('visit_date')
-            ->get();
+        $projectVisits = $this->visitsForReportDate(ProjectVisit::class, $from, $to, ['agency', 'salesRep.user']);
+        $companyVisits = $this->visitsForReportDate(CompanyVisit::class, $from, $to, ['agency', 'salesRep.user']);
         $clients = $this->clientsForReportDate($from, $to)
             ->with(['agency', 'assignedSalesperson.user'])
             ->orderBy('created_at')
@@ -174,8 +171,8 @@ class ReportController extends Controller
     {
         [$from, $to] = $this->resolveDateRange($request, defaultRange: 'month');
         $profiles = Profile::query()->with('user')->orderBy('full_name')->get();
-        $projectVisits = ProjectVisit::query()->whereDate('visit_date', '>=', $from)->whereDate('visit_date', '<=', $to)->get();
-        $companyVisits = CompanyVisit::query()->whereDate('visit_date', '>=', $from)->whereDate('visit_date', '<=', $to)->get();
+        $projectVisits = $this->visitsForReportDate(ProjectVisit::class, $from, $to);
+        $companyVisits = $this->visitsForReportDate(CompanyVisit::class, $from, $to);
         $clients = $this->clientsForReportDate($from, $to)->get();
 
         $rows = $profiles->map(function (Profile $profile) use ($request, $projectVisits, $companyVisits, $clients): array|null {
@@ -263,6 +260,34 @@ class ReportController extends Controller
                     ->whereDate('created_at', '<=', $to);
             });
         });
+    }
+
+    /**
+     * Match the calendar date in the reporting timezone. ISO timestamps sent
+     * by the UI may be stored under the previous UTC date.
+     *
+     * @param class-string<ProjectVisit|CompanyVisit> $model
+     * @param array<int, string> $with
+     */
+    private function visitsForReportDate(string $model, string $from, string $to, array $with = []): Collection
+    {
+        $candidateFrom = Carbon::parse($from)->subDay()->format('Y-m-d');
+        $candidateTo = Carbon::parse($to)->addDay()->format('Y-m-d');
+
+        return $model::query()->with($with)
+            ->whereDate('visit_date', '>=', $candidateFrom)
+            ->whereDate('visit_date', '<=', $candidateTo)
+            ->orderBy('visit_date')
+            ->get()
+            ->filter(function (ProjectVisit|CompanyVisit $visit) use ($from, $to): bool {
+                $reportDate = $visit->visit_date
+                    ->copy()
+                    ->setTimezone($this->reportTimezone())
+                    ->format('Y-m-d');
+
+                return $reportDate >= $from && $reportDate <= $to;
+            })
+            ->values();
     }
 
 }
