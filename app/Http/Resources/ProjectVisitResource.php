@@ -18,6 +18,7 @@ class ProjectVisitResource extends JsonResource
             'contact_person' => $this->whenLoaded('agency', fn () => $this->agency?->contact_person),
             'phone' => $this->whenLoaded('agency', fn () => $this->agency?->phone),
             'sales_rep_id' => $this->sales_rep_id,
+            'sales_rep_name' => $this->whenLoaded('salesRep', fn () => $this->salesRep?->full_name ?? $this->salesRep?->user?->email),
             'feedback' => $this->feedback,
             'notes' => $this->notes,
             'created_by' => $this->created_by,

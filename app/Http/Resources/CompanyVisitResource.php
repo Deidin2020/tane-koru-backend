@@ -19,6 +19,7 @@ class CompanyVisitResource extends JsonResource
             'contact_person' => $this->whenLoaded('agency', fn () => $this->agency?->contact_person),
             'address' => $this->whenLoaded('agency', fn () => $this->agency?->address),
             'sales_rep_id' => $this->sales_rep_id,
+            'sales_rep_name' => $this->whenLoaded('salesRep', fn () => $this->salesRep?->full_name ?? $this->salesRep?->user?->email),
             'feedback' => $this->feedback,
             'notes' => $this->notes,
             'created_by' => $this->created_by,

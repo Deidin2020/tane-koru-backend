@@ -27,6 +27,7 @@ class ClientResource extends JsonResource
             'purchase_purpose' => $this->purchase_purpose,
             'visit_date' => optional($this->visit_date)?->format('Y-m-d'),
             'assigned_salesperson_id' => $this->assigned_salesperson_id,
+            'assigned_salesperson_name' => $this->whenLoaded('assignedSalesperson', fn () => $this->assignedSalesperson?->full_name ?? $this->assignedSalesperson?->user?->email),
             'presentation_completed' => (bool) $this->presentation_completed,
             'objection' => $this->objection,
             'offer_details' => $this->offer_details,

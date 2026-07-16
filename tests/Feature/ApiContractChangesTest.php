@@ -2,11 +2,15 @@
 
 namespace Tests\Feature;
 
+use App\Models\Client;
+use App\Models\CompanyVisit;
 use App\Models\Profile;
 use App\Models\Project;
+use App\Models\ProjectVisit;
 use App\Models\Role;
 use App\Models\User;
 use App\Support\ApiTokenService;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -134,7 +138,12 @@ class ApiContractChangesTest extends TestCase
             ->assertOk()
             ->assertJsonPath('clients.0.id', $client->json('id'))
             ->assertJsonPath('clients.0.offer_details', 'Unit B-12, 30% down payment')
-            ->assertJsonPath('company_visits.total', 1);
+            ->assertJsonPath('clients.0.assigned_salesperson_name', 'Sara Hassan')
+            ->assertJsonPath('project_visits.items.0.agency_name', 'North Star Agency')
+            ->assertJsonPath('project_visits.items.0.sales_rep_name', 'Sara Hassan')
+            ->assertJsonPath('company_visits.total', 1)
+            ->assertJsonPath('company_visits.items.0.company_name', 'North Star Agency')
+            ->assertJsonPath('company_visits.items.0.contact_person', 'Agency Contact');
 
         $second = $this->withToken($this->token)->postJson('/api/v1/salespeople', [
             'full_name' => 'Second Rep',
@@ -212,10 +221,73 @@ class ApiContractChangesTest extends TestCase
             ->assertJsonPath('error.code', 'AGENCY_HAS_RELATED_RECORDS');
     }
 
+    public function test_today_filters_by_calendar_date_regardless_of_time(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-07-16 12:00:00', 'UTC'));
+
+        try {
+            $project = Project::resolveDefault();
+            $salesperson = Profile::query()->create([
+                'full_name' => 'Midnight Rep',
+                'is_salesperson' => true,
+                'is_active' => true,
+                'is_default' => true,
+            ]);
+            $agency = $this->createAgency();
+
+            $client = Client::query()->create([
+                'project_id' => $project->id,
+                'client_name' => 'Early Morning Client',
+                'lead_source' => 'direct',
+                'visit_date' => '2026-07-16',
+                'assigned_salesperson_id' => $salesperson->id,
+                'created_by' => $this->admin->id,
+            ]);
+            // The report must use the explicitly entered business date, not
+            // the timestamp/date assigned by the database server.
+            $client->forceFill(['created_at' => '2026-07-15 21:00:00'])->saveQuietly();
+            ProjectVisit::query()->create([
+                'project_id' => $project->id,
+                'agency_id' => $agency['id'],
+                // The database date is July 15 UTC, but its reporting date is July 16.
+                'visit_date' => '2026-07-15 21:30:00',
+                'sales_rep_id' => $salesperson->id,
+                'created_by' => $this->admin->id,
+            ]);
+            CompanyVisit::query()->create([
+                'project_id' => $project->id,
+                'agency_id' => $agency['id'],
+                'visit_date' => '2026-07-16 00:00:01',
+                'sales_rep_id' => $salesperson->id,
+                'created_by' => $this->admin->id,
+            ]);
+
+            $this->withToken($this->token)->getJson('/api/v1/reports/dashboard')
+                ->assertOk()
+                ->assertJsonPath('today.new_clients', 1)
+                ->assertJsonPath('today.project_visits', 1)
+                ->assertJsonPath('today.company_visits', 1);
+
+            $this->withToken($this->token)->getJson('/api/v1/reports/daily?range=today')
+                ->assertOk()
+                ->assertJsonPath('range.from', '2026-07-16')
+                ->assertJsonPath('range.to', '2026-07-16')
+                ->assertJsonPath('clients.0.client_name', 'Early Morning Client')
+                ->assertJsonPath('project_visits.total', 1)
+                ->assertJsonPath('company_visits.total', 1);
+
+            $this->withToken($this->token)->getJson('/api/v1/reports/daily?date=2026-07-16')
+                ->assertOk()
+                ->assertJsonPath('project_visits.total', 1)
+                ->assertJsonPath('project_visits.items.0.agency_name', 'North Star Agency');
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
+
     private function createAgency(): array
     {
         return $this->withToken($this->token)->postJson('/api/v1/agencies', [
-            'name' => 'North Star Agency',
             'category' => 'small_agency',
             'contact_person' => 'Agency Contact',
             'phone' => '+90 111',

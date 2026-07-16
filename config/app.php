@@ -65,7 +65,11 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => env('APP_TIMEZONE', 'UTC'),
+
+    // Calendar-based reports use this timezone when resolving "today" and
+    // date-only ranges. Database timestamps remain normalized to APP_TIMEZONE.
+    'report_timezone' => env('REPORT_TIMEZONE', 'Europe/Istanbul'),
 
     /*
     |--------------------------------------------------------------------------
