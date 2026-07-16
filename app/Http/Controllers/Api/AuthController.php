@@ -70,6 +70,10 @@ class AuthController extends Controller
             return ApiError::unauthorized('Invalid credentials.');
         }
 
+        if (! $user->is_active) {
+            return ApiError::forbidden('This account has been deactivated. Contact an administrator.');
+        }
+
         return response()->json([
             'access_token' => $this->tokens->issue($user),
             'token_type' => 'Bearer',
