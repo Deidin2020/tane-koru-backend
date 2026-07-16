@@ -818,7 +818,7 @@ Agency records include nullable `email`; normalized names remain unique.
 
 ### GET `/reports/daily`
 
-Date-only filters and named ranges (`today`, `this_week`, `this_month`) are
+Date-only filters and named ranges (`today`, `yesterday`, `this_week`, `this_month`) are
 resolved in `REPORT_TIMEZONE` (Europe/Istanbul by default), and records are
 matched by their calendar date only; the time component is ignored. Visit sections keep
 their existing totals and also expose an `items` array containing the complete

@@ -135,7 +135,9 @@ class ReportController extends Controller
                 'text' => $summaryRecord?->summary,
                 'editable' => $fromDate->isSameDay($toDate) && $fromDate->isSameDay(now($this->reportTimezone())),
             ],
-        ]);
+        ])->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', '0');
     }
 
     public function upsertDailySummary(UpsertDailySummaryRequest $request): DailyReportResource|JsonResponse
@@ -236,10 +238,11 @@ class ReportController extends Controller
         }
 
         $today = now($timezone)->startOfDay();
-        $range = (string) $request->query('range', $defaultRange);
+        $range = strtolower(trim((string) $request->query('range', $defaultRange)));
         [$from, $to] = match ($range) {
-            'week', 'this_week' => [$today->copy()->startOfWeek(), $today],
-            'month', 'this_month' => [$today->copy()->startOfMonth(), $today],
+            'yesterday' => [$today->copy()->subDay(), $today->copy()->subDay()],
+            'week', 'this_week', 'thisweek' => [$today->copy()->startOfWeek(), $today],
+            'month', 'this_month', 'thismonth' => [$today->copy()->startOfMonth(), $today],
             default => [$today, $today],
         };
 
@@ -266,31 +269,16 @@ class ReportController extends Controller
         });
     }
 
-    /**
-     * Match the calendar date in the reporting timezone. ISO timestamps sent
-     * by the UI may be stored under the previous UTC date.
-     *
-     * @param class-string<ProjectVisit|CompanyVisit> $model
-     * @param array<int, string> $with
+    /** @param class-string<ProjectVisit|CompanyVisit> $model
+     *  @param array<int, string> $with
      */
     private function visitsForReportDate(string $model, string $from, string $to, array $with = []): Collection
     {
-        $candidateFrom = Carbon::parse($from)->subDay()->format('Y-m-d');
-        $candidateTo = Carbon::parse($to)->addDay()->format('Y-m-d');
-
         return $model::query()->with($with)
-            ->whereDate('visit_date', '>=', $candidateFrom)
-            ->whereDate('visit_date', '<=', $candidateTo)
+            ->whereDate('visit_date', '>=', $from)
+            ->whereDate('visit_date', '<=', $to)
             ->orderBy('visit_date')
             ->get()
-            ->filter(function (ProjectVisit|CompanyVisit $visit) use ($from, $to): bool {
-                $reportDate = $visit->visit_date
-                    ->copy()
-                    ->setTimezone($this->reportTimezone())
-                    ->format('Y-m-d');
-
-                return $reportDate >= $from && $reportDate <= $to;
-            })
             ->values();
     }
 

@@ -136,6 +136,7 @@ class ApiContractChangesTest extends TestCase
 
         $this->withToken($this->token)->getJson('/api/v1/reports/daily?range=today')
             ->assertOk()
+            ->assertHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
             ->assertJsonPath('clients.0.id', $client->json('id'))
             ->assertJsonPath('clients.0.offer_details', 'Unit B-12, 30% down payment')
             ->assertJsonPath('clients.0.assigned_salesperson_name', 'Sara Hassan')
@@ -249,8 +250,7 @@ class ApiContractChangesTest extends TestCase
             ProjectVisit::query()->create([
                 'project_id' => $project->id,
                 'agency_id' => $agency['id'],
-                // The database date is July 15 UTC, but its reporting date is July 16.
-                'visit_date' => '2026-07-15 21:30:00',
+                'visit_date' => '2026-07-16 21:30:00',
                 'sales_rep_id' => $salesperson->id,
                 'created_by' => $this->admin->id,
             ]);
@@ -280,6 +280,13 @@ class ApiContractChangesTest extends TestCase
                 ->assertOk()
                 ->assertJsonPath('project_visits.total', 1)
                 ->assertJsonPath('project_visits.items.0.agency_name', 'North Star Agency');
+
+            $this->withToken($this->token)->getJson('/api/v1/reports/daily?range=yesterday')
+                ->assertOk()
+                ->assertJsonPath('range.from', '2026-07-15')
+                ->assertJsonPath('range.to', '2026-07-15')
+                ->assertJsonPath('project_visits.total', 0)
+                ->assertJsonPath('company_visits.total', 0);
         } finally {
             Carbon::setTestNow();
         }
