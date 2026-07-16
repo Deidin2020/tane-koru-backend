@@ -241,10 +241,13 @@ class ApiContractChangesTest extends TestCase
                 'project_id' => $project->id,
                 'client_name' => 'Early Morning Client',
                 'lead_source' => 'direct',
+                'visit_date' => '2026-07-16',
                 'assigned_salesperson_id' => $salesperson->id,
                 'created_by' => $this->admin->id,
             ]);
-            $client->forceFill(['created_at' => '2026-07-16 00:00:01'])->saveQuietly();
+            // The report must use the explicitly entered business date, not
+            // the timestamp/date assigned by the database server.
+            $client->forceFill(['created_at' => '2026-07-15 21:00:00'])->saveQuietly();
             ProjectVisit::query()->create([
                 'project_id' => $project->id,
                 'agency_id' => $agency['id'],

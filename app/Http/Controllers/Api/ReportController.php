@@ -16,6 +16,7 @@ use App\Models\Project;
 use App\Models\ProjectVisit;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -31,8 +32,8 @@ class ReportController extends Controller
         $stats = [
             'project_visits' => ProjectVisit::query()->whereDate('visit_date', $today)->count(),
             'company_visits' => CompanyVisit::query()->whereDate('visit_date', $today)->count(),
-            'new_clients' => Client::query()->whereDate('created_at', $today)->count(),
-            'presentations' => Client::query()->whereDate('created_at', $today)->where('presentation_completed', true)->count(),
+            'new_clients' => $this->clientsForReportDate($today, $today)->count(),
+            'presentations' => $this->clientsForReportDate($today, $today)->where('presentation_completed', true)->count(),
         ];
 
         $pipelineTotals = [
@@ -54,13 +55,13 @@ class ReportController extends Controller
                 'date' => $dateValue,
                 'project_visits' => ProjectVisit::query()->whereDate('visit_date', $dateValue)->count(),
                 'company_visits' => CompanyVisit::query()->whereDate('visit_date', $dateValue)->count(),
-                'new_clients' => Client::query()->whereDate('created_at', $dateValue)->count(),
-                'presentations' => Client::query()->whereDate('created_at', $dateValue)->where('presentation_completed', true)->count(),
+                'new_clients' => $this->clientsForReportDate($dateValue, $dateValue)->count(),
+                'presentations' => $this->clientsForReportDate($dateValue, $dateValue)->where('presentation_completed', true)->count(),
             ];
         });
 
         $profiles = Profile::query()->with('user')->orderBy('full_name')->get();
-        $clients = Client::query()->whereDate('created_at', '>=', $last30)->get();
+        $clients = $this->clientsForReportDate($last30, $today)->get();
         $salespeople = $profiles->map(function (Profile $profile) use ($clients): array {
             $mine = $clients->where('assigned_salesperson_id', $profile->id);
 
@@ -95,8 +96,8 @@ class ReportController extends Controller
         $companyVisits = CompanyVisit::query()->with(['agency', 'salesRep.user'])
             ->whereDate('visit_date', '>=', $from)->whereDate('visit_date', '<=', $to)->orderBy('visit_date')
             ->get();
-        $clients = Client::query()->with(['agency', 'assignedSalesperson.user'])
-            ->whereDate('created_at', '>=', $from)->whereDate('created_at', '<=', $to)
+        $clients = $this->clientsForReportDate($from, $to)
+            ->with(['agency', 'assignedSalesperson.user'])
             ->orderBy('created_at')
             ->get();
 
@@ -175,7 +176,7 @@ class ReportController extends Controller
         $profiles = Profile::query()->with('user')->orderBy('full_name')->get();
         $projectVisits = ProjectVisit::query()->whereDate('visit_date', '>=', $from)->whereDate('visit_date', '<=', $to)->get();
         $companyVisits = CompanyVisit::query()->whereDate('visit_date', '>=', $from)->whereDate('visit_date', '<=', $to)->get();
-        $clients = Client::query()->whereDate('created_at', '>=', $from)->whereDate('created_at', '<=', $to)->get();
+        $clients = $this->clientsForReportDate($from, $to)->get();
 
         $rows = $profiles->map(function (Profile $profile) use ($request, $projectVisits, $companyVisits, $clients): array|null {
             if ($request->filled('sales_rep_id') && (int) $request->query('sales_rep_id') !== $profile->id) {
@@ -247,6 +248,21 @@ class ReportController extends Controller
     private function reportTimezone(): string
     {
         return (string) config('app.report_timezone', config('app.timezone', 'UTC'));
+    }
+
+    private function clientsForReportDate(string $from, string $to): Builder
+    {
+        return Client::query()->where(function (Builder $query) use ($from, $to): void {
+            $query->where(function (Builder $withVisitDate) use ($from, $to): void {
+                $withVisitDate->whereNotNull('visit_date')
+                    ->whereDate('visit_date', '>=', $from)
+                    ->whereDate('visit_date', '<=', $to);
+            })->orWhere(function (Builder $withoutVisitDate) use ($from, $to): void {
+                $withoutVisitDate->whereNull('visit_date')
+                    ->whereDate('created_at', '>=', $from)
+                    ->whereDate('created_at', '<=', $to);
+            });
+        });
     }
 
 }

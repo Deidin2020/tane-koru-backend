@@ -826,6 +826,9 @@ visit rows used by detailed report and PDF views. The presentations section
 likewise exposes its matching client rows in `items`. Client rows include
 `assigned_salesperson_name`; visit rows include `sales_rep_name`.
 
+Client report membership uses the explicitly entered `visit_date` when present;
+only clients without a `visit_date` fall back to the calendar date of `created_at`.
+
 - Auth: `any_authenticated`
 - Query params:
   - either `date=YYYY-MM-DD`
