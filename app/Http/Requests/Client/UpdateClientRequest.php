@@ -33,11 +33,6 @@ class UpdateClientRequest extends ApiFormRequest
             'objection' => ['sometimes', 'nullable', 'string'],
             'offer_details' => ['sometimes', 'nullable', 'string'],
             'notes' => ['sometimes', 'nullable', 'string'],
-            'status' => ['prohibited'],
-            'not_interested_reason' => ['prohibited'],
-            'project_id' => ['prohibited'],
-            'created_by' => ['prohibited'],
-            'last_activity_at' => ['prohibited'],
         ];
     }
 }

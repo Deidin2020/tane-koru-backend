@@ -148,6 +148,37 @@ class ApiContractChangesTest extends TestCase
         $this->assertFalse(Profile::query()->findOrFail($salesperson['id'])->is_default);
     }
 
+    public function test_client_update_ignores_read_only_fields_from_the_client_resource(): void
+    {
+        $salesperson = Profile::query()->create([
+            'full_name' => 'Default Rep',
+            'is_salesperson' => true,
+            'is_active' => true,
+            'is_default' => true,
+        ]);
+        $agency = $this->createAgency();
+
+        $client = $this->withToken($this->token)->postJson('/api/v1/clients', [
+            'client_name' => 'Original Client',
+            'lead_source' => 'agency',
+            'agency_id' => $agency['id'],
+            'assigned_salesperson_id' => $salesperson->id,
+        ])->assertCreated()->json();
+
+        $this->withToken($this->token)->patchJson("/api/v1/clients/{$client['id']}", [
+            ...$client,
+            'client_name' => 'Updated Client',
+            'status' => 'won',
+            'project_id' => 999,
+            'created_by' => 999,
+            'last_activity_at' => now()->addYear()->toISOString(),
+        ])->assertOk()
+            ->assertJsonPath('client_name', 'Updated Client')
+            ->assertJsonPath('status', 'new')
+            ->assertJsonPath('project_id', Project::resolveDefault()->id)
+            ->assertJsonPath('created_by', $this->admin->id);
+    }
+
     public function test_agency_updates_are_reflected_in_old_visits_and_related_agencies_cannot_be_deleted(): void
     {
         $salesperson = Profile::query()->create([
